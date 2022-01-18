@@ -1,0 +1,17 @@
+<!-- <div class="route-container" *ngIf="listOfLocations">
+    {{ mainChar }}
+</div>
+<div class="setLocations" [ngStyle]="{color: shouldBeRed ? 'red' : 'blue'}">
+    <div class="setLocation" *ngFor="let item of listOfLocations">
+        {{ item }}
+    </div>
+</div>
+<button (click)="shouldBeRed = !shouldBeRed">Change</button> -->
+
+<app-alboms></app-alboms>
+
+<global-route *ngIf="destroy"></global-route>
+<button (click)="destroyToggle()">destroy toggle</button>
+<app-template-driven-forms></app-template-driven-forms>
+
+<div class="full" id="map"></div>

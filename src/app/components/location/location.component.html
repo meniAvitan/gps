@@ -1,0 +1,15 @@
+<div class="location-container" *ngIf="location" [ngStyle]="{color: location.lat > 50 ? 'green' : 'red', 'border-width': borderWidth + 'px'}">
+    <div class="location-card">
+        <h2>{{ location.Source}}</h2>
+        <p>Lat: {{ location.lat }}</p>
+        <p>Lng: {{ location.lng }}</p>
+        <button (click)="deleteLocation()">Delete location</button>
+    </div>
+</div>
+
+<div>
+    <form novalidate id="ngForm" (submit)="onSubmit()">
+        <input type="hidden" name="locationId" [value]="api.locations.lat">
+        <button type="submit">create route</button>
+    </form>
+</div>

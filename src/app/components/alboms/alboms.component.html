@@ -1,0 +1,16 @@
+<table *ngIf="!!alboms && alboms.length">
+    <thead>
+        <tr>
+            <td *ngFor="let item of colums">
+                {{ item }}
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let albom of alboms">
+            <td>{{ albom.userId }}</td>
+            <td>{{ albom.id }}</td>
+            <td>{{ albom.title }}</td>
+        </tr>
+    </tbody>
+</table>
