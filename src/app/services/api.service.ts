@@ -21,8 +21,8 @@ export class ApiService {
   }
   
 
-  public postAlbom():Observable<Array<ILocation>>{
+  public postAlbom():Observable<any>{
     const url: string = "http://localhost:56173/api/Person";
-    return this.http.post<Array<ILocation>>(url, location);
+    return this.http.post<any>(url, this.locationData.locationArray);
   }
 }
