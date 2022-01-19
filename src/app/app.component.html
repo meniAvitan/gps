@@ -1,17 +1,16 @@
-<!-- <div class="route-container" *ngIf="listOfLocations">
-    {{ mainChar }}
-</div>
-<div class="setLocations" [ngStyle]="{color: shouldBeRed ? 'red' : 'blue'}">
-    <div class="setLocation" *ngFor="let item of listOfLocations">
-        {{ item }}
-    </div>
-</div>
-<button (click)="shouldBeRed = !shouldBeRed">Change</button> -->
-
-<app-alboms></app-alboms>
-
-<global-route *ngIf="destroy"></global-route>
+<global-route *ngIf="destroy">
+</global-route>
 <button (click)="destroyToggle()">destroy toggle</button>
-<app-template-driven-forms></app-template-driven-forms>
 
+<div>
+    <button (click)="getLocationArray()">קבלת מסלול</button>
+</div>
+<form novalidate id="ngForm" (submit)="onSubmit()">
+    <input type="hidden" name="locationId">
+    <button routerLink="/shipRouting" type="submit">צור מסלול</button>
+    <button routerLink="/shipRouting">מסלול מוכן</button>
+</form>
 <div class="full" id="map"></div>
+
+
+<router-outlet></router-outlet>

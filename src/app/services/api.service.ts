@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppComponent } from '../app.component';
 import { IAlbom } from '../models/alboms.interface';
+import { Igps } from '../models/gps.interface';
 import { ILocation } from '../models/location.interface';
 
 @Injectable({
@@ -12,17 +13,18 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  locationData: AppComponent = new AppComponent();
+  // locationData: AppComponent = new AppComponent();
+ 
   locations: ILocation = new ILocation();
 
-  public getAlbom():Observable<Array<ILocation>>{
-    const url: string = "http://localhost:56173/api/Person";
+  public getCoordinates():Observable<Array<ILocation>>{
+    const url: string = "http://localhost:56173/api/Location";
     return this.http.get(url, {}) as Observable<Array<ILocation>>;
   }
   
 
-  public postAlbom():Observable<any>{
-    const url: string = "http://localhost:56173/api/Person";
-    return this.http.post<any>(url, this.locationData.locationArray);
-  }
+ 
+
+  
+  
 }

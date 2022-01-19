@@ -7,9 +7,8 @@ import { LocationComponent } from './components/location/location.component';
 import { TemplateDrivenFormsComponent } from './components/template-driven-forms/template-driven-forms.component';
 import { FormsModule } from '@angular/forms';
 import { AlbomsComponent } from './components/alboms/alboms.component';
-import {HttpClientModule} from '@angular/common/http'
-
-
+import {HttpClientModule} from '@angular/common/http';
+import { AppRoutingModule, routingComponents } from './app-routing.module';
 
 
 
@@ -19,12 +18,14 @@ import {HttpClientModule} from '@angular/common/http'
     GlobalRoute,
     LocationComponent,
     TemplateDrivenFormsComponent,
-    AlbomsComponent
+    AlbomsComponent,
+    routingComponents
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

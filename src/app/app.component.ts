@@ -1,6 +1,10 @@
 import { Component, NgModule, OnInit } from '@angular/core';
 import { Loader } from "@googlemaps/js-api-loader";
+import { Igps } from './models/gps.interface';
 import { LocationService } from './services/location.service';
+
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -11,13 +15,14 @@ import { LocationService } from './services/location.service';
 
 
 
-export class AppComponent implements OnInit 
+export class AppComponent 
 {
   title="gps"
   destroy: boolean = true;
   destroyToggle(){
     this.destroy = !this.destroy;
   }
+  constructor(private http: HttpClient) { }
 
 
     poly!: google.maps.Polyline;
@@ -28,13 +33,14 @@ export class AppComponent implements OnInit
       var locations: LocationService = new LocationService();
       
       let loader = new Loader({
-        apiKey: 'AIzaSyCCEFMnHK46CZ0DPTVpHDLhGKKnQiMnt8I'
+        apiKey: 'AIzaSyD1oPJilzUAzjOsz4m2IpoYMVZOk8r2YiE'
       })
       loader.load().then(() => {
 
         this.map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
           zoom: 7,
-          center: { lat: 41.879, lng: -87.624 }, // Center the map on Chicago, USA.
+          center: { lat: 12.0572243, lng: 49.0385085  },
+          clickableIcons: false
         });
        
         this.poly = new google.maps.Polyline({
@@ -49,7 +55,8 @@ export class AppComponent implements OnInit
       }
       )}
     
-    locationArray : any[] = [];
+    locationArray : Igps[] = [];
+    
     //Handles click events on a map, and adds a new point to the Polyline.
     addLatLng(event: google.maps.MapMouseEvent) {
       const path = this.poly.getPath();
@@ -65,22 +72,60 @@ export class AppComponent implements OnInit
         title: "#" + path.getLength(),
         map: this.map,
       });
+     
       lat: Number;
       lng: Number;
 
       this.locationArray.push({
-          lat: event.latLng!.lat(),
-          lng: event.latLng!.lng()
+          Id: 0,
+          Lat: event.latLng!.lat(),
+          Lng: event.latLng!.lng()
       });
-      var postLocations = this.locationArray.map(x => x.lat)
-      console.log(postLocations);
+      var postLocations = this.locationArray.map(x => x)
+      console.log("postLocations",postLocations);
+      
       // this.post.addLocations(postLocations);
       // console.log('test');
 
       
       
     }
+   
+    public getLocationArray(){
+      var a =  this.locationArray;
+      console.log("-----TEST--------", a);
+    }
+    
 
+
+    public postAlbom():Observable<Igps>{
+      const httpOptions = {
+        headers: new HttpHeaders({
+          'Content-Type' : 'application/json'
+        })  
+      }
+      const url: string = "http://localhost:56173/api/Location";
+      var a =  this.locationArray;
+      console.log("-----TEST--------", a);
+      
+      
+      return this.http.post<Igps>(url, a, httpOptions);
+      
+    }
+
+    onSubmit(){
+      this.postAlbom().subscribe(
+        res =>{
+          console.log(res);
+          
+        },
+        err =>{
+          console.log(err);
+          
+        }
+      )
+    }
+  
     
   
 

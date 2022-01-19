@@ -4,4 +4,4 @@ export class ILocation{
     lat!: number;
     lng!: number;
     isActive!: boolean;
-  }
+  } 
