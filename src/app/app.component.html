@@ -1,16 +1,5 @@
-<global-route *ngIf="destroy">
-</global-route>
-<button (click)="destroyToggle()">destroy toggle</button>
+<button routerLink="/createRoute">צור את המסלול שלך</button>
 
-<div>
-    <button (click)="getLocationArray()">קבלת מסלול</button>
-</div>
-<form novalidate id="ngForm" (submit)="onSubmit()">
-    <input type="hidden" name="locationId">
-    <button routerLink="/shipRouting" type="submit">צור מסלול</button>
-    <button routerLink="/shipRouting">מסלול מוכן</button>
-</form>
-<div class="full" id="map"></div>
-
+<h2>sdfhjnk</h2>
 
 <router-outlet></router-outlet>

@@ -2,7 +2,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppComponent } from '../app.component';
-import { IAlbom } from '../models/alboms.interface';
 import { Igps } from '../models/gps.interface';
 import { ILocation } from '../models/location.interface';
 
