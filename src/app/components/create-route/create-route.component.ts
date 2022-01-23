@@ -3,15 +3,29 @@ import { Component, OnInit } from '@angular/core';
 import { Loader } from "@googlemaps/js-api-loader";
 import { Observable } from 'rxjs';
 import { Igps } from 'src/app/models/gps.interface';
+import { ILandOrWather } from 'src/app/models/landOrWather.interface';
+import { ILatLon } from 'src/app/models/latLon.interface';
+import { ApiService } from 'src/app/services/api.service';
+
+
 
 @Component({
   selector: 'app-create-route',
   templateUrl: './create-route.component.html',
   styleUrls: ['./create-route.component.css']
 })
+
 export class CreateRouteComponent implements OnInit {
 
-  constructor(private http: HttpClient) { }
+
+  constructor(private http: HttpClient, public api: ApiService) { }
+
+  public landOrWather: boolean = true;
+  public landData!: any;
+  public lat!: any;
+  
+ 
+
 
   poly!: google.maps.Polyline;
   map!: google.maps.Map;
@@ -36,26 +50,27 @@ export class CreateRouteComponent implements OnInit {
       this.poly.setMap(this.map);
     
       // Add a listener for the click event
+     
       this.map.addListener("click", (event: google.maps.MapMouseEvent) => this.addLatLng(event));
+     
+      
     }
     )}
     locationArray : Igps[] = [];
 
     addLatLng(event: google.maps.MapMouseEvent) {
       const path = this.poly.getPath();
-
-      // Because path is an MVCArray, we can simply append a new coordinate
-      // and it will automatically appear.
-      
+ 
       path.push(event.latLng);
 
-      // Add a new marker at the new plotted point on the polyline.
+      // Add a new marker at the new plotted point on the polyline. 
       new google.maps.Marker({
         position: event.latLng,
         title: "#" + path.getLength(),
         map: this.map,
       });
-     
+    
+      
       lat: Number;
       lng: Number;
 
@@ -66,20 +81,70 @@ export class CreateRouteComponent implements OnInit {
       });
       var postLocations = this.locationArray.map(x => x)
       console.log("postLocations",postLocations);
-      
-      // this.post.addLocations(postLocations);
-      // console.log('test');
 
+      console.log("a=" , this.lat);
+      
+      this.postLatLon()
+
+      console.log("b=", this.lat[this.lat.length-1]);
+      this.getDataLandOrWater();
+      
+      
       
       
     }
+    
 
     public getLocationArray(){
-      var a =  this.locationArray;
+      var a =  this.locationArray.map(x => x.Lat);
       console.log("-----TEST--------", a);
     }
 
-    public postAlbom():Observable<Igps>{
+    public postLatLon():Observable<ILatLon>{
+      this.lat =  this.locationArray.map(x => x.Lat);
+      var lon =  this.locationArray.map(x => x.Lng);
+      var s  = this.lat[this.lat.length-1]
+      
+      // const httpOptions = {
+      //   headers: new HttpHeaders({
+      //     'Content-Type' : 'application/json'
+      //   })  
+      // }
+      const url: string = `https://api.onwater.io/api/v1/results/${s},${lon}?access_token=6RN4htEi68V_hBEVzebP`;
+      console.log(url);
+      
+      return(url) as unknown as Observable<ILatLon>;
+    }
+    
+    public getDataLandOrWater(){
+      this.getLandOrWather().subscribe((data)=>{
+
+        this.landData = data;
+        console.log("a ->",  this.landOrWather);
+        this.landOrWather = data.water; 
+        
+        if(this.landOrWather == false){
+          this.landOrWather = this.landOrWather;
+          console.log("b -> ",this.landOrWather); 
+          alert("this location are in land! you must set a location in water...");
+        }else{
+          console.log("b -> ",this.landOrWather); 
+         
+        }       
+        console.log(data);  
+            
+      })
+    }
+    
+    public getLandOrWather():Observable<ILandOrWather>{
+      var lat = this.lat[this.lat.length-1];
+      console.log("s-lat", lat);
+      
+      const url: string = `https://api.onwater.io/api/v1/results/${lat},48.8993481202326?access_token=6RN4htEi68V_hBEVzebP`;
+      return this.http.get(url, {}) as Observable<ILandOrWather>;
+    }
+
+    public postCoordinates():Observable<Igps>{
       const httpOptions = {
         headers: new HttpHeaders({
           'Content-Type' : 'application/json'
@@ -93,8 +158,9 @@ export class CreateRouteComponent implements OnInit {
       return this.http.post<Igps>(url, a, httpOptions);
       
     }
+
     onSubmit(){
-      this.postAlbom().subscribe(
+      this.postCoordinates().subscribe(
         res =>{
           console.log(res);
           

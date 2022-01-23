@@ -15,6 +15,8 @@ export class ShipRoutingComponent implements OnInit {
   public locations!: Array<ILocation>;
   public riskZoneCircle!: any;
   public infoWindow!: google.maps.InfoWindow;
+  public landData!: any[];
+  public filterLandData!: any[];
 
 public riskZoneList: Record<string, ILocationsRadius> = {
     chicago: {
@@ -43,6 +45,7 @@ public riskZoneList: Record<string, ILocationsRadius> = {
           mapTypeId: "terrain",
         }
       );
+
       this.api.getCoordinates().subscribe((data)=>{
         console.log(data);
         this.locations = data;
