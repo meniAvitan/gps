@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Loader } from '@googlemaps/js-api-loader';
+import { Igps } from 'src/app/models/gps.interface';
 import { ILocation } from 'src/app/models/location.interface';
 import { ILocationsRadius } from 'src/app/models/locationsRadius.interface';
 import { ApiService } from 'src/app/services/api.service';
+import { DataService } from 'src/app/services/data.service';
+import { CreateRouteComponent } from '../create-route/create-route.component';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-ship-routing',
@@ -11,12 +15,13 @@ import { ApiService } from 'src/app/services/api.service';
 })
 export class ShipRoutingComponent implements OnInit {
 
-  constructor( public api: ApiService) { }
+  constructor( public api: ApiService, public dataService: DataService) { }
   public locations!: Array<ILocation>;
   public riskZoneCircle!: any;
   public infoWindow!: google.maps.InfoWindow;
   public landData!: any[];
   public filterLandData!: any[];
+  public locationsArrayData!: Array<Igps>
 
 public riskZoneList: Record<string, ILocationsRadius> = {
     chicago: {
@@ -34,7 +39,7 @@ public riskZoneList: Record<string, ILocationsRadius> = {
   };
   ngOnInit(): void {
     let loader = new Loader({
-      apiKey: 'AIzaSyD1oPJilzUAzjOsz4m2IpoYMVZOk8r2YiE'
+      apiKey: environment.google_maps_api
     })
     loader.load().then(() => {
       let map = new google.maps.Map(
@@ -57,20 +62,34 @@ public riskZoneList: Record<string, ILocationsRadius> = {
       }, err => console.log(err)
       )
 
-      const flightPlanCoordinates = [
-        {id: 46, lat: 14.0371, lng: 46.9658},
-        {id: 49, lat: 11.6522, lng: 49.0861},
-        {id: 50, lat: 12.1253, lng: 47.7128},
-      ];
-      const flightPath = new google.maps.Polyline({
-        path: flightPlanCoordinates,
-        geodesic: true,
-        strokeColor: "#FF0000",
-        strokeOpacity: 1.0,
-        strokeWeight: 2,
+      const lineSymbol = {
+        path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+        scale: 5,
+        strokeColor: "#393",
+      };
+      const line = new google.maps.Polyline({
+        path: this.dataService.cordinatsArray,
+        icons: [
+          {
+            icon: lineSymbol,
+            offset: "100%",
+          },
+        ],
+        map: map,
       });
     
-      flightPath.setMap(map);
+      this.animateCircle(line);
+
+      // const flightPath = new google.maps.Polyline({
+      //   path: this.dataService.cordinatsArray,
+      //   geodesic: true,
+      //   strokeColor: "#FF0000",
+      //   strokeOpacity: 1.0,
+      //   strokeWeight: 2,
+      // });
+    
+      // flightPath.setMap(map);
+      
       
       for (var riskZone in this.riskZoneList) {
         // Add the circle for this city to the map.
@@ -91,6 +110,23 @@ public riskZoneList: Record<string, ILocationsRadius> = {
 
     })
 
+  }
+ animateCircle(line: google.maps.Polyline) {
+    let count = 0;
+  
+    window.setInterval(() => {
+      count = (count + 1) % 200;
+  
+      const icons = line.get("icons");
+  
+      icons[0].offset = count / 2 + "%";
+      line.set("icons", icons);
+    }, 20);
+  }
+
+  public setlocationsArray(cordinatsArray: Array<Igps>){
+    cordinatsArray = this.locationsArrayData;
+    return(cordinatsArray)
   }
 
   showArrays(event: any) {

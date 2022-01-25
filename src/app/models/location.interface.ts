@@ -1,7 +1,5 @@
 export class ILocation{
-    Source!: string;
-    Destination!: string;
+    id!:number;
     lat!: number;
     lng!: number;
-    isActive!: boolean;
   } 

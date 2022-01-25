@@ -1,5 +1,5 @@
 export interface Igps{
-    Id: number,
-    Lat: number,
-    Lng: number
+    id: number,
+    lat: number,
+    lng: number
 }
