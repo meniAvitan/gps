@@ -46,4 +46,4 @@ testem.log
 Thumbs.db
 
 #ENV 
-/enviroment.pord.ts
+.enviroment.pord.ts
