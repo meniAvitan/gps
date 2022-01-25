@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  google_maps_api: 'AIzaSyD1oPJilzUAzjOsz4m2IpoYMVZOk8r2YiE'
+  google_maps_api: 'AIzaSyD1oPJilzUAzjOsz4m2IpoYMVZOk8r2YiE',
+  s:1
 };
 
 /*
