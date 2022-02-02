@@ -5,9 +5,16 @@ import { Observable } from 'rxjs';
 import { Igps } from 'src/app/models/gps.interface';
 import { ILandOrWather } from 'src/app/models/landOrWather.interface';
 import { ILatLon } from 'src/app/models/latLon.interface';
+import { ILocationsRadius } from 'src/app/models/locationsRadius.interface';
+import { IRadius } from 'src/app/models/radids.interface';
+import { IRiskZones } from 'src/app/models/riskZone.interface';
 import { ApiService } from 'src/app/services/api.service';
 import { DataService } from 'src/app/services/data.service';
-import { environment } from 'src/environments/environment';
+import { RiskeZoneService } from 'src/app/services/riske-zone.service';
+import { environment } from 'src/environment/enviroment.pord';
+
+
+
 
 
 
@@ -20,29 +27,31 @@ import { environment } from 'src/environments/environment';
 export class CreateRouteComponent implements OnInit {
 
 
-  constructor(private http: HttpClient, public api: ApiService, public dataService: DataService) { }
+  constructor(private http: HttpClient, public api: ApiService, public dataService: DataService, public riskZoneData: RiskeZoneService) { }
   
   public landOrWather: boolean = true;
   public lat!: any;
   public lon!: any;
   public locations!: Igps [];
-  
- 
+  public lOw: boolean = true;
+  public zones: IRiskZones[] = [];
+  public riskZoneCircle!: any;
 
 
   poly!: google.maps.Polyline;
   map!: google.maps.Map;
 
   ngOnInit(): void {
+    //window.location.reload()
     let loader = new Loader({
       apiKey: environment.google_maps_api
     })
     loader.load().then(() => {
 
       this.map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
-        zoom: 7,
+        zoom: 2,
         center: { lat: 12.0572243, lng: 49.0385085  },
-        clickableIcons: false
+        clickableIcons: true,
       });
      
       this.poly = new google.maps.Polyline({
@@ -51,77 +60,107 @@ export class CreateRouteComponent implements OnInit {
         strokeWeight: 3,
       });
       this.poly.setMap(this.map);
-    
-      // Add a listener for the click event
+      for (var riskZone in this.riskZoneData.riskZoneList) {
+        // Add the circle for this city to the map.
+        this.riskZoneCircle = new google.maps.Circle({
+          strokeColor: "#FF0000",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#FF0000",
+          fillOpacity: 0.35,
+          map: this.map,
+          center: this.riskZoneData.riskZoneList[riskZone].center, 
+          radius: Math.sqrt(this.riskZoneData.riskZoneList[riskZone].population) * 200,
+          clickable: false
+        }); 
+       
+        this.zones.push(this.riskZoneData.riskZoneList[riskZone].center); 
+      }
+      console.log(this.zones);
+      
      
       this.map.addListener("click", (event: google.maps.MapMouseEvent) => this.addLatLng(event));
      
-      
+
     }
-    )}
+  )
+}
     locationArray : Igps[] = [];
-    
-
-
+  
     addLatLng(event: google.maps.MapMouseEvent) {
       const path = this.poly.getPath();
- 
-      path.push(event.latLng);
+      const click = event.latLng;
+      var locs = { lat: event.latLng?.lat(), lng: event.latLng?.lng() };
 
-      // Add a new marker at the new plotted point on the polyline. 
-      new google.maps.Marker({
-        position: event.latLng,
-        title: "#" + path.getLength(),
-        map: this.map,
-      });
-
-      lat: Number;
-      lng: Number;
+      path.push(click);
+      for(let x = 0; x < this.zones.length-2; x++){
+        console.log("zones",this.zones[x]);
+        
+      var n = this.riskZoneData.arePointsNear(this.zones[x], locs, 900);
+      
+        if(n){
+          console.log(`zones[${x}] = ${this.zones[x]}`);
+          
+          const marker = new google.maps.Marker({
+            map: this.map,
+            position: click,
+            title: "#" + path.getLength(),
+            label: {
+              text:"I", //marking all jobs inside radius with I
+              color:"white"
+            }
+          });
+        }else{
+          const marker = new google.maps.Marker({
+            map: this.map,
+            position: click,
+            title: "#" + path.getLength(),
+            label: {
+              text:"O", //marking all jobs outside radius with O
+              color:"white"
+            }
+          });
+        }
+      }
+      
       this.dataService.cordinatsArray.push({
-        id: 0,
-          lat: event.latLng!.lat(),
-          lng: event.latLng!.lng()
+          id: 0,
+          lat: click!.lat(),
+          lng: click!.lng()
       });
       this.locationArray.push({
           id: 0,
-          lat: event.latLng!.lat(),
-          lng: event.latLng!.lng()
+          lat: click!.lat(),
+          lng: click!.lng(),
+          
       });
-      var postLocations = this.dataService.cordinatsArray.map(x => x)
-      console.log("postLocations",postLocations);
-
-      console.log("a=" , this.lat);
       
-      this.postLatLon()
-
-      console.log("b=", this.lat[this.lat.length-1]);
+      this.dataService.postLatLon();
       this.getDataLandOrWater();
       
-      
-      
-      
+
     }
     
 
-    public getLocationArray(){
-      var a =  this.locationArray.map(x => x.lat);
-      console.log("-----TEST--------", a);
-    }
+   landOrWater():void{
+     this.dataService.getLandOrWather().subscribe((data)=>{
+      this.landOrWather = data.water; 
+        if(this.landOrWather == false){
+          this.landOrWather = this.landOrWather;
+          
+          alert("this location are in land! you must set a location in water...");
+          return false;
+        }
+        else{
+          console.log("b -> ",this.landOrWather); 
+          return true;
+        }
+     })
+    
+   }
 
-    public postLatLon():Observable<ILatLon>{
-      this.lat =  this.dataService.cordinatsArray.map(x => x.lat);
-      this.lon =  this.dataService.cordinatsArray.map(x => x.lng);
-      var lat  = this.lat[this.lat.length-1]
-      var lon  = this.lon[this.lon.length-1]
-    
-      const url: string = `https://api.onwater.io/api/v1/results/${lat},${lon}?access_token=6RN4htEi68V_hBEVzebP`;
-      console.log("URL",url);
-      
-      return(url) as unknown as Observable<ILatLon>;
-    }
-    
     getDataLandOrWater(){
-      this.getLandOrWather().subscribe((data)=>{
+      this.dataService.getLandOrWather().subscribe((data)=>{
 
         console.log("a ->",  this.landOrWather);
         this.landOrWather = data.water; 
@@ -131,42 +170,14 @@ export class CreateRouteComponent implements OnInit {
           console.log("b -> ",this.landOrWather); 
           
           alert("this location are in land! you must set a location in water...");
+          
         }else{
           console.log("b -> ",this.landOrWather); 
-         
+          
         }       
-        console.log(data);  
             
       })
     }
-    
-    public getLandOrWather():Observable<ILandOrWather>{
-      var lat = this.lat[this.lat.length-1];
-      var lon = this.lon[this.lon.length-1];
-      
-      const url: string = `https://api.onwater.io/api/v1/results/${lat},${lon}?access_token=6RN4htEi68V_hBEVzebP`;
-      return this.http.get(url, {}) as Observable<ILandOrWather>;
-    }
-
-    saveCordinats(cordinats: Array<Igps>){
-      cordinats = this.dataService.cordinatsArray;
-      console.log("cordinats", cordinats);
-      
-      return cordinats;
-    }
-
-    // public postCoordinates():Observable<Igps>{
-    //   const httpOptions = {
-    //     headers: new HttpHeaders({
-    //       'Content-Type' : 'application/json'
-    //     })  
-    //   }
-    //   const url: string = "http://localhost:56173/api/Location";
-    //   var a =  this.dataService.cordinatsArray;
-    //   console.log("-----POST CORDINATS--------", a);
-    //   return this.http.post<Igps>(url, a, httpOptions);
-      
-    // }
     
     onSubmit(){
       this.api.postCoordinates(this.dataService.cordinatsArray).subscribe(
@@ -179,6 +190,10 @@ export class CreateRouteComponent implements OnInit {
         }
       )
     }
+
+
+
+    
   
 
 }

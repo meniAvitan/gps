@@ -8,6 +8,7 @@ import {HttpClientModule} from '@angular/common/http';
 import { AppRoutingModule, routingComponents } from './app-routing.module';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { ShipRoutingComponent } from './components/ship-routing/ship-routing.component';
+import { UpdateRouteComponent } from './components/update-route/update-route.component';
 
 
 
@@ -17,7 +18,8 @@ import { ShipRoutingComponent } from './components/ship-routing/ship-routing.com
     LocationComponent,
     routingComponents,
     CreateRouteComponent,
-    ShipRoutingComponent
+    ShipRoutingComponent,
+    UpdateRouteComponent
   ],
   imports: [
     BrowserModule,

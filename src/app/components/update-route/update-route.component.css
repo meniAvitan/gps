@@ -11,17 +11,9 @@ body,
     height: 100vh;
 }
 
-form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-form button {
-    margin: 1rem;
-}
-
 button {
+    margin-left: 90%;
+    margin-bottom: 1rem;
     padding: 10px;
     background-color: rgb(81, 167, 47);
     color: #fff;

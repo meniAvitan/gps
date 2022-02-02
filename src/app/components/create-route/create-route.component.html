@@ -1,10 +1,7 @@
-<div>
-    <button (click)="getLocationArray()">קבלת מסלול</button>
-</div>
 <form novalidate id="ngForm" (submit)="onSubmit()">
-    <button routerLink="/shipRouting" type="submit">צור מסלול</button>
-    <button routerLink="/shipRouting">מסלול מוכן</button>
+    <button routerLink="/createRoute" type="submit">שמור מסלול</button>
+    <button routerLink="/shipRouting">הצג מסלול</button>
     <button routerLink="/routesHistory">הסטורית מסלולים</button>
-    <button (click)="getDataLandOrWater()">check url</button>
+    <button routerLink="/updateRoute">עדכן מסלול</button>
 </form>
 <div class="full" id="map"></div>

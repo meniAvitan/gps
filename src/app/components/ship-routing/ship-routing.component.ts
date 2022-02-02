@@ -3,10 +3,12 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Igps } from 'src/app/models/gps.interface';
 import { ILocation } from 'src/app/models/location.interface';
 import { ILocationsRadius } from 'src/app/models/locationsRadius.interface';
+import { IRadius } from 'src/app/models/radids.interface';
+import { IRiskZones } from 'src/app/models/riskZone.interface';
 import { ApiService } from 'src/app/services/api.service';
 import { DataService } from 'src/app/services/data.service';
-import { CreateRouteComponent } from '../create-route/create-route.component';
-import { environment } from 'src/environments/environment';
+import { RiskeZoneService } from 'src/app/services/riske-zone.service';
+import { environment } from 'src/environment/enviroment.pord';
 
 @Component({
   selector: 'app-ship-routing',
@@ -15,28 +17,25 @@ import { environment } from 'src/environments/environment';
 })
 export class ShipRoutingComponent implements OnInit {
 
-  constructor( public api: ApiService, public dataService: DataService) { }
-  public locations!: Array<ILocation>;
+  constructor( public api: ApiService, public dataService: DataService, public riskZoneData: RiskeZoneService) { }
+  
   public riskZoneCircle!: any;
-  public infoWindow!: google.maps.InfoWindow;
-  public landData!: any[];
-  public filterLandData!: any[];
-  public locationsArrayData!: Array<Igps>
+  public x1!: number;
+  public y1!: number;
+  public x2!: number;
+  public y2!: number;
+  public lat!: number;
+  public lng!: number;
+  public zones: IRiskZones[] = [];
+  public landOrWather: boolean = true;
+  public counter: number = 0;
+  public riskZoneFleg!: boolean;
+  public riskZoneCounter: number = 0;
+  
 
-public riskZoneList: Record<string, ILocationsRadius> = {
-    chicago: {
-      center: { lat: 14.500277783764705, lng: 49.1520336671076 },
-      population: 27148,
-    },
-    newyork: {
-      center: { lat: 11.083178367763717, lng: 46.8668774171076 },
-      population: 27148,
-    },
-    vancouver: {
-      center: { lat: 13.091959703067056, lng: 51.7228344483576 },
-      population: 27148,
-    },
-  };
+
+
+  
   ngOnInit(): void {
     let loader = new Loader({
       apiKey: environment.google_maps_api
@@ -45,25 +44,24 @@ public riskZoneList: Record<string, ILocationsRadius> = {
       let map = new google.maps.Map(
         document.getElementById("map2") as HTMLElement,
         {
-          zoom: 7,
+          zoom: 2,
           center: { lat: 12.0572243, lng: 49.0385085  },
           mapTypeId: "terrain",
         }
       );
 
       this.api.getCoordinates().subscribe((data)=>{
-        console.log(data);
-        this.locations = data;
+        //console.log(data);
         let filteredLocations = data.filter(function (currentElement) {
           return currentElement.lat && currentElement.lng;
         });
-        console.log("filteredLocations -> ",filteredLocations); 
+        //console.log("filteredLocations -> ",filteredLocations); 
         
       }, err => console.log(err)
       )
 
       const lineSymbol = {
-        path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
         scale: 5,
         strokeColor: "#393",
       };
@@ -76,22 +74,12 @@ public riskZoneList: Record<string, ILocationsRadius> = {
           },
         ],
         map: map,
+        editable: true,
       });
     
       this.animateCircle(line);
 
-      // const flightPath = new google.maps.Polyline({
-      //   path: this.dataService.cordinatsArray,
-      //   geodesic: true,
-      //   strokeColor: "#FF0000",
-      //   strokeOpacity: 1.0,
-      //   strokeWeight: 2,
-      // });
-    
-      // flightPath.setMap(map);
-      
-      
-      for (var riskZone in this.riskZoneList) {
+      for (var riskZone in this.riskZoneData.riskZoneList) {
         // Add the circle for this city to the map.
         this.riskZoneCircle = new google.maps.Circle({
           strokeColor: "#FF0000",
@@ -100,17 +88,98 @@ public riskZoneList: Record<string, ILocationsRadius> = {
           fillColor: "#FF0000",
           fillOpacity: 0.35,
           map,
-          center: this.riskZoneList[riskZone].center,
-          radius: Math.sqrt(this.riskZoneList[riskZone].population) * 100,
-        });
+          center: this.riskZoneData.riskZoneList[riskZone].center, 
+          radius: Math.sqrt(this.riskZoneData.riskZoneList[riskZone].population) * 200,
+          clickable: false
+        }); 
+       
+        this.zones.push(this.riskZoneData.riskZoneList[riskZone].center); 
+        
       }
-      this.riskZoneCircle.addListener("click", (event: any) => this.showArrays(event));
-      this.infoWindow = new google.maps.InfoWindow();
+      console.log("zones", this.zones);
+
+      if(this.dataService.cordinatsArray.length > 1){
+        console.log("All cordinats array => ", this.dataService.cordinatsArray);
+        
+        for (let j = 0; j <= this.dataService.cordinatsArray.length - 1; j++) {
+          let flegArray = this.dataService.cordinatsArray.slice(j, j + 2);
+          console.log("flegArray", flegArray);
+
+          this.x1 = flegArray[0].lat;
+          this.y1 = flegArray[0].lng;
+
+          this.x2 = flegArray[flegArray.length - 1].lat;
+          this.y2 = flegArray[flegArray.length - 1].lng;
+
+          for (let i = 0; i < 1; i += 0.1) {
+
+            let linearLocations = this.riskZoneData.interpolate({ lat: this.x1, lng: this.y1 }, { lat: this.x2, lng: this.y2 }, i); // returns {x:3, y:3}
+            //console.log("interpolate", linearLocations);
+            // const image =
+            // "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
+            // const beachMarker = new google.maps.Marker({
+            //   position: linearLocations,
+            //   map,
+            //   icon: image,
+            // });
+            for(let x = 0; x <= this.zones.length - 1; x++){
+              var n = this.riskZoneData.arePointsNear(this.zones[x], linearLocations, 800); 
 
 
+              if(n){
+                
+                console.log(this.counter++);
+                
+                this.riskZoneFleg = true;
+  
+              }else{ 
+                this.riskZoneFleg = false;
+               
+              }
+              if(this.riskZoneFleg){
+                const image =
+                "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
+                const beachMarker = new google.maps.Marker({
+                  position: this.zones[x],
+                  map,
+                  icon: image,
+                });
+                this.riskZoneCounter++;
+              }
+            }
+            
+            
+          }
+         
+        }
+        if(this.counter > 1){
+          alert(`BOOOM! there are ${this.riskZoneCounter} risk zone`);
+        }
+        else{
+          alert(`Your route is safe! there are ${this.riskZoneCounter} risk zone`);
+        }
+      }
+      
     })
 
   }
+
+  getDataLandOrWater(){
+    
+    this.dataService.getLandOrWather().subscribe((data)=>{
+
+      this.landOrWather = data.water; 
+      
+      if(this.landOrWather == false){
+        this.landOrWather = this.landOrWather;
+      }else{
+       
+      }       
+      console.log(data);  
+          
+    })
+  }
+    
  animateCircle(line: google.maps.Polyline) {
     let count = 0;
   
@@ -121,44 +190,12 @@ public riskZoneList: Record<string, ILocationsRadius> = {
   
       icons[0].offset = count / 2 + "%";
       line.set("icons", icons);
-    }, 20);
+    }, 50);
   }
 
-  public setlocationsArray(cordinatsArray: Array<Igps>){
-    cordinatsArray = this.locationsArrayData;
-    return(cordinatsArray)
+  resetCordinatsArray(){
+    this.dataService.cordinatsArray = []
   }
 
-  showArrays(event: any) {
-    // Since this polygon has only one path, we can call getPath() to return the
-    // MVCArray of LatLngs.
-    // @ts-ignore
-    
-    const polygon = this as google.maps.Polygon;
-    const vertices = polygon.getPath();
-  
-    let contentString =
-      "<b>Bermuda Triangle polygon</b><br>" +
-      "Clicked location: <br>" +
-      event.latLng.lat() +
-      "," +
-      event.latLng.lng() +
-      "<br>";
-  
-    // Iterate over the vertices.
-    for (let i = 0; i < vertices.getLength(); i++) {
-      const xy = vertices.getAt(i);
-  
-      contentString +=
-        "<br>" + "Coordinate " + i + ":<br>" + xy.lat() + "," + xy.lng();
-    }
-  
-    // Replace the info window's content and position.
-    this.infoWindow.setContent(contentString);
-    this.infoWindow.setPosition(event.latLng);
-  let map!: google.maps.Map;
-    this.infoWindow.open(map);
-  }
-  
 
 }
