@@ -36,6 +36,8 @@ export class CreateRouteComponent implements OnInit {
   public lOw: boolean = true;
   public zones: IRiskZones[] = [];
   public riskZoneCircle!: any;
+  public riskZoneFleg!: boolean;
+  public counter: number = 0;
 
 
   poly!: google.maps.Polyline;
@@ -90,38 +92,15 @@ export class CreateRouteComponent implements OnInit {
     addLatLng(event: google.maps.MapMouseEvent) {
       const path = this.poly.getPath();
       const click = event.latLng;
-      var locs = { lat: event.latLng?.lat(), lng: event.latLng?.lng() };
 
       path.push(click);
-      for(let x = 0; x < this.zones.length-2; x++){
-        console.log("zones",this.zones[x]);
+          new google.maps.Marker({
+          map: this.map,
+          position: click,
+          title: "#" + path.getLength(),
+          });
         
-      var n = this.riskZoneData.arePointsNear(this.zones[x], locs, 900);
       
-        if(n){
-          console.log(`zones[${x}] = ${this.zones[x]}`);
-          
-          const marker = new google.maps.Marker({
-            map: this.map,
-            position: click,
-            title: "#" + path.getLength(),
-            label: {
-              text:"I", //marking all jobs inside radius with I
-              color:"white"
-            }
-          });
-        }else{
-          const marker = new google.maps.Marker({
-            map: this.map,
-            position: click,
-            title: "#" + path.getLength(),
-            label: {
-              text:"O", //marking all jobs outside radius with O
-              color:"white"
-            }
-          });
-        }
-      }
       
       this.dataService.cordinatsArray.push({
           id: 0,

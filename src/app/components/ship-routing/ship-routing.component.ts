@@ -123,20 +123,10 @@ export class ShipRoutingComponent implements OnInit {
             //   icon: image,
             // });
             for(let x = 0; x <= this.zones.length - 1; x++){
-              var n = this.riskZoneData.arePointsNear(this.zones[x], linearLocations, 800); 
+              var n = this.riskZoneData.arePointsNear(this.zones[x], linearLocations, 750); 
 
 
               if(n){
-                
-                console.log(this.counter++);
-                
-                this.riskZoneFleg = true;
-  
-              }else{ 
-                this.riskZoneFleg = false;
-               
-              }
-              if(this.riskZoneFleg){
                 const image =
                 "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
                 const beachMarker = new google.maps.Marker({
@@ -144,11 +134,9 @@ export class ShipRoutingComponent implements OnInit {
                   map,
                   icon: image,
                 });
-                this.riskZoneCounter++;
+                console.log(this.counter++);
               }
-            }
-            
-            
+            }  
           }
          
         }
